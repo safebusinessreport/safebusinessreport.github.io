@@ -1,0 +1,345 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Safe Business</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F6F4; --surface:#FFFFFF; --surface2:#E7EEEB; --ink:#13262B; --ink2:#4A5F63; --ink3:#7A8F92;
+  --line:#D5DFDC; --accent:#0F8A6A; --accent-ink:#0B6B52; --accent-soft:#D9EFE7;
+  --good:#2C9A67; --good-soft:#DDF2E6; --watch:#D68A00; --watch-soft:#FBEED2; --urgent:#C4432C; --urgent-soft:#FADFD8;
+  --shadow:0 1px 2px rgba(19,38,43,.06),0 8px 24px -12px rgba(19,38,43,.18);
+  --display:"Bricolage Grotesque","Avenir Next",Avenir,"Helvetica Neue",Arial,sans-serif;
+  --body:"Atkinson Hyperlegible",Verdana,"Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E191C; --surface:#172629; --surface2:#1F3135; --ink:#E7EFED; --ink2:#A8BCBE; --ink3:#7C9295;
+    --line:#2A3D41; --accent:#3DBB95; --accent-ink:#6FD5B4; --accent-soft:#163A32;
+    --good:#4CC08A; --good-soft:#153A2A; --watch:#F0A92B; --watch-soft:#3E2E0E; --urgent:#F0785F; --urgent-soft:#44201A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E191C; --surface:#172629; --surface2:#1F3135; --ink:#E7EFED; --ink2:#A8BCBE; --ink3:#7C9295;
+  --line:#2A3D41; --accent:#3DBB95; --accent-ink:#6FD5B4; --accent-soft:#163A32;
+  --good:#4CC08A; --good-soft:#153A2A; --watch:#F0A92B; --watch-soft:#3E2E0E; --urgent:#F0785F; --urgent-soft:#44201A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:800}
+h2{font-size:clamp(1.6rem,3.2vw,2.1rem);font-weight:700}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+.prose{max-width:68ch}
+.mono{font-family:var(--mono);font-size:.92em;font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--display);font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink)}
+nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{position:relative;display:flex;align-items:center;gap:20px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap;flex:none;text-decoration:none;color:var(--ink);font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em}
+.brand svg{width:30px;height:30px}
+nav li a:hover{background:var(--surface2);color:var(--ink)}
+.nav-toggle{flex:none;display:inline-flex;margin-left:auto;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);align-items:center;justify-content:center;cursor:pointer;padding:0}
+.nav-toggle:hover{color:var(--ink);border-color:var(--ink3)}
+.nav-toggle svg{width:22px;height:22px}
+.nav-toggle svg[hidden]{display:none}
+.theme-toggle{flex:none;margin-left:0;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink2);display:inline-grid;place-items:center;cursor:pointer;padding:0}
+.theme-toggle:hover{color:var(--ink);border-color:var(--ink3)}
+.theme-toggle svg{width:20px;height:20px;grid-area:1/1}
+.theme-toggle .moon{display:block}.theme-toggle .sun{display:none}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .theme-toggle .moon{display:none} :root:not([data-theme="light"]) .theme-toggle .sun{display:block}}
+:root[data-theme="dark"] .theme-toggle .moon{display:none}
+:root[data-theme="dark"] .theme-toggle .sun{display:block}
+:root[data-theme="light"] .theme-toggle .moon{display:block}
+:root[data-theme="light"] .theme-toggle .sun{display:none}
+nav ul{list-style:none;position:absolute;top:100%;right:0;left:auto;width:min(320px,100%);margin:0;padding:8px;flex-direction:column;gap:2px;background:var(--bg);border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;box-shadow:var(--shadow);max-height:calc(100vh - 60px);overflow-y:auto;display:none}
+nav ul.open{display:flex}
+nav li a{display:block;padding:11px 12px;border-radius:8px;font-size:1rem;text-decoration:none;color:var(--ink2);white-space:nowrap}
+@media (max-width:640px){nav ul{left:0;width:auto;border-radius:0;border-left:0;border-right:0}}
+header.hero{padding:64px 0 48px}
+.hero-grid{display:grid;grid-template-columns:1fr minmax(260px,340px);gap:40px;align-items:start}
+@media (max-width:820px){.hero-grid{grid-template-columns:1fr}}
+.logo-lockup{display:flex;align-items:center;gap:18px;margin-bottom:28px}
+.logo-lockup svg{width:72px;height:72px;flex:none}
+.logo-word{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;letter-spacing:-.02em}
+.logo-word small{display:block;font-weight:500;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-top:6px}
+.lede{font-size:1.2rem;color:var(--ink2);margin-top:18px;max-width:58ch}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:26px}
+.meta span{display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;color:var(--ink2);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;font-family:var(--display);font-weight:700}
+.meta b{display:block;margin-top:4px;color:var(--ink);font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:0;text-transform:none;line-height:1.2}
+.verdict{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.verdict .eyebrow{color:var(--ink3)}
+.verdict-badge{display:inline-flex;align-items:center;gap:10px;margin-top:10px;padding:10px 16px 10px 12px;border-radius:999px;background:var(--watch-soft);color:var(--ink);font-family:var(--display);font-weight:800;font-size:1.35rem}
+.verdict-badge .dot{width:16px;height:16px;border-radius:50%;background:var(--watch);box-shadow:0 0 0 4px color-mix(in srgb,var(--watch) 25%,transparent)}
+.verdict p{margin-top:12px;color:var(--ink2);font-size:.98rem}
+.lights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.light{text-align:center}
+.light .n{font-family:var(--display);font-weight:800;font-size:1.8rem;line-height:1}
+.light .l{font-size:.78rem;color:var(--ink2);margin-top:4px}
+.light.good .n{color:var(--good)}.light.watch .n{color:var(--watch)}.light.urgent .n{color:var(--urgent)}
+section{padding:44px 0;border-top:1px solid var(--line)}
+.sec-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
+.sec-head .status{flex:none;margin-top:6px;display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 9px;border-radius:999px;font-family:var(--display);font-weight:700;font-size:.82rem;letter-spacing:.02em}
+.status .dot{width:10px;height:10px;border-radius:50%}
+.status.info{background:var(--surface2)}.status.info .dot{background:var(--ink3)}
+.sec-head h2{flex:1}
+.two{display:grid;grid-template-columns:minmax(0,68ch) minmax(240px,1fr);gap:36px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.prose p+p{margin-top:14px}
+.prose strong{font-weight:700}
+.callout{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.callout h3{font-size:1rem;margin-bottom:8px}
+.small{font-size:.86rem;color:var(--ink3)}
+.pill{display:inline-block;white-space:nowrap;padding:2px 9px;border-radius:999px;font-size:.78rem;font-weight:700;font-family:var(--display)}
+.pill.good{background:var(--good-soft)}.pill.watch{background:var(--watch-soft)}.pill.urgent{background:var(--urgent-soft)}
+details{border-top:1px solid var(--line);padding:14px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:700;font-family:var(--display);list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::after{content:"+";font-size:1.3rem;color:var(--ink3)}
+details[open] summary::after{content:"–"}
+details .prose{margin-top:10px;color:var(--ink2);font-size:.95rem}
+footer{padding:40px 0 60px;color:var(--ink3);font-size:.88rem;border-top:1px solid var(--line)}
+footer .brand{font-size:1rem;color:var(--ink2)}
+/* landing */
+.cta{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:999px;background:var(--accent);color:#fff;font-family:var(--display);font-weight:800;font-size:1.05rem;text-decoration:none;border:0;cursor:pointer}
+.cta:hover{background:var(--accent-ink)}
+.cta.ghost{background:transparent;color:var(--accent-ink);border:2px solid var(--accent)}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.feat .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.feat .card h3{font-size:1.1rem;margin:12px 0 8px}
+.feat .card p{color:var(--ink2);font-size:.96rem}
+.feat .ic{width:42px;height:42px;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center}
+.feat .ic svg{width:24px;height:24px}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.who .p{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.who .p h3{font-size:1.05rem;margin-bottom:6px}
+.who .p p{color:var(--ink2);font-size:.94rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;counter-reset:st}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.steps li::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--display);font-weight:800;margin-bottom:12px}
+.steps h3{font-size:1.05rem;margin-bottom:6px}
+.steps p{color:var(--ink2);font-size:.94rem}
+.mock{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.mock .row2{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.mock .row2:last-child{border-bottom:0}
+.band{background:var(--accent);color:#fff;border-radius:20px;padding:36px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.band h2{color:#fff}
+.band p{color:rgba(255,255,255,.85);max-width:56ch;margin-top:8px}
+.band .cta{background:#fff;color:var(--accent-ink)}
+@media (max-width:720px){.band{grid-template-columns:1fr}}
+</style>
+</head><body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Safe Business home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#sb-logo"/></svg>
+      Safe Business
+    </a>
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navMenu">
+      <svg class="open-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <ul id="navMenu">
+      <li><a href="#what">What it is</a></li>
+      <li><a href="#who">Who it's for</a></li>
+      <li><a href="#inside">What you get</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#sample">Sample report</a></li>
+      <li><a href="#faq">Questions</a></li>
+      <li><a href="#contact">Get started</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</nav>
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  var stored=null; try{stored=localStorage.getItem('sb-theme');}catch(e){}
+  if(stored==='dark'||stored==='light'){root.setAttribute('data-theme',stored);}
+  function current(){var t=root.getAttribute('data-theme');if(t)return t;return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}
+  function label(){btn.setAttribute('aria-label',current()==='dark'?'Switch to light mode':'Switch to dark mode');}
+  btn.addEventListener('click',function(){var next=current()==='dark'?'light':'dark';root.setAttribute('data-theme',next);try{localStorage.setItem('sb-theme',next);}catch(e){}label();});
+  label();
+  var nt=document.getElementById('navToggle'),menu=document.getElementById('navMenu');
+  var openI=nt.querySelector('.open-icon'),closeI=nt.querySelector('.close-icon');
+  function setMenu(open){menu.classList.toggle('open',open);nt.setAttribute('aria-expanded',open?'true':'false');openI.toggleAttribute('hidden',open);closeI.toggleAttribute('hidden',!open);}
+  nt.addEventListener('click',function(e){e.stopPropagation();setMenu(!menu.classList.contains('open'));});
+  menu.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false);});
+  document.addEventListener('click',function(e){if(menu.classList.contains('open')&&!menu.contains(e.target)&&e.target!==nt)setMenu(false);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false);});
+})();
+</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="sb-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3DBB95"/><stop offset="1" stop-color="#0B6B52"/></linearGradient>
+    <linearGradient id="sb-metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4EBEE"/><stop offset="1" stop-color="#9FAEB5"/></linearGradient>
+    <symbol id="sb-logo" viewBox="0 0 64 64">
+      <rect x="22" y="3" width="20" height="14" rx="2.5" fill="url(#sb-metal)"/>
+      <rect x="26.5" y="7" width="4" height="4" rx="1" fill="#5C6E75"/>
+      <rect x="33.5" y="7" width="4" height="4" rx="1" fill="#5C6E75"/>
+      <rect x="16" y="15" width="32" height="44" rx="7" fill="url(#sb-g)"/>
+      <rect x="20" y="19" width="24" height="10" rx="3" fill="#FFFFFF" fill-opacity=".16"/>
+      <circle cx="46" cy="47" r="13" fill="#FFFFFF"/>
+      <circle cx="46" cy="47" r="10.5" fill="var(--good,#2C9A67)"/>
+      <path d="M40.5 47.5 L44.5 51.5 L52 43.5" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="logo-lockup">
+        <svg viewBox="0 0 64 64" role="img" aria-label="Safe Business logo: a USB stick with a verification tick"><use href="#sb-logo"/></svg>
+        <div class="logo-word">Safe Business<small>Plain-English security reports for small organisations</small></div>
+      </div>
+      <h1>Know if your computers are safe, without learning the jargon.</h1>
+      <p class="lede">Safe Business watches the computers in your office around the clock and sends you one short page every week that says what happened, whether it matters, and what to do about it. Written for the owner, the manager and the board, not for IT.</p>
+      <div class="cta-row">
+        <a class="cta" href="#contact">Get started</a>
+        <a class="cta ghost" href="#sample">See a sample report</a>
+      </div>
+      <div class="meta">
+        <span>Format<b>One page, weekly</b></span>
+        <span>Reading time<b>About 5 minutes</b></span>
+        <span>Written for<b>Non-technical readers</b></span>
+      </div>
+    </div>
+    <aside class="verdict" aria-label="Example verdict">
+      <div class="eyebrow">The first thing you see, every week</div>
+      <div class="verdict-badge"><span class="dot"></span>Needs attention</div>
+      <p>No sign of a break-in. One computer has unpatched software and two have weak security settings that would make a break-in easier. Three things to do this month.</p>
+      <div class="lights">
+        <div class="light good"><div class="n">3</div><div class="l">areas looking fine</div></div>
+        <div class="light watch"><div class="n">2</div><div class="l">areas to watch</div></div>
+        <div class="light urgent"><div class="n">1</div><div class="l">needs action now</div></div>
+      </div>
+    </aside>
+  </div>
+</header>
+
+<section id="what">
+  <div class="wrap">
+    <div class="sec-head"><span class="status info"><span class="dot"></span>What it is</span><h2>A security report you can actually read</h2></div>
+    <div class="two">
+      <div class="prose">
+        <p>Most small organisations have no idea whether their computers are secure. The tools that could tell them produce thousands of alerts in a language only specialists understand, so nobody looks, and the first sign of a problem is the problem itself.</p>
+        <p>Safe Business sits between you and that noise. A small, open-source monitoring agent goes on each computer and reports constantly to a monitoring server. Each week, everything it saw is turned into one page in plain English: a traffic-light verdict, a short version you can read in two minutes, a section for each topic, and a to-do list in priority order with an owner and a time estimate for each item.</p>
+        <p>Nothing on the page needs a translator. Where a technical term is unavoidable it is defined on the spot, and a glossary at the bottom covers the rest.</p>
+      </div>
+      <div class="callout">
+        <h3>The three traffic lights</h3>
+        <p class="small" style="color:var(--ink2)"><span class="pill good">Fine</span> Normal activity, nothing to do.<br><br><span class="pill watch">Watch</span> Not dangerous today, but worth a look or a small fix.<br><br><span class="pill urgent">Act now</span> A real weakness an attacker could use. Fix this month.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="who">
+  <div class="wrap">
+    <div class="sec-head"><span class="status info"><span class="dot"></span>Who it's for</span><h2>Built for the people responsible, not the people technical</h2></div>
+    <p class="prose" style="margin-bottom:20px;color:var(--ink2)">Safe Business suits any organisation with roughly 3 to 50 computers and nobody whose full-time job is security.</p>
+    <div class="who">
+      <div class="p"><h3>Small businesses</h3><p>Owners who want a straight answer to "are we OK?" every week, and a short list of what to fix, without hiring an IT department.</p></div>
+      <div class="p"><h3>Charities and not-for-profits</h3><p>Boards and committees with a duty of care over donor and client data, who need a record showing it is being looked after.</p></div>
+      <div class="p"><h3>Schools and education providers</h3><p>Small and independent schools with student records, shared devices and a mix of Windows and Mac machines that nobody fully tracks.</p></div>
+      <div class="p"><h3>Clinics, practices and professional offices</h3><p>Anyone handling health, legal or financial information who may need to show a partner, insurer or regulator how their systems are monitored.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <div class="sec-head"><span class="status info"><span class="dot"></span>What you get</span><h2>Every week, one page covering six things</h2></div>
+    <div class="feat">
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div><h3>Your computers, listed</h3><p>Every machine we watch, what it runs, its traffic light and one plain sentence about its week.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><h3>Software holes and updates</h3><p>Which known security flaws are open on your machines, which were fixed by updates, and which need a hand.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg></div><h3>Safe-settings score</h3><p>Each computer checked against an independent checklist of recommended settings, scored as a percentage, with the ones that matter explained.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg></div><h3>Viruses and hidden activity</h3><p>Virus scans and checks for software trying to hide itself, with false alarms explained rather than left to worry you.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div><h3>Logins and accounts</h3><p>Failed passwords, new or changed accounts, administrator use, and whether the monitoring itself had gaps.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div><h3>How you look from the internet</h3><p>A check of your public internet address for exposed services and bad reputation, plus a review of your router when you want one.</p></div>
+    </div>
+    <div class="prose" style="margin-top:28px">
+      <p>From the second week on, every report also says what changed since last week, so improvements and new problems stand out without reading both. When something unusual happens, you can ask for a <strong>special report</strong> covering just the last 24 hours.</p>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head"><span class="status info"><span class="dot"></span>How it works</span><h2>Four steps, most of them ours</h2></div>
+    <ol class="steps">
+      <li><h3>A short conversation</h3><p>We learn how many computers you have, what they run, and who should receive the report. No audit, no questionnaire.</p></li>
+      <li><h3>We set up the monitoring</h3><p>A small agent goes on each Windows and Mac machine and reports to a monitoring server. It is open-source, widely used and does not slow computers down.</p></li>
+      <li><h3>You get a page every week</h3><p>Same day each week. Readable on a phone. Dark or light mode. Kept in a dated archive so you can look back.</p></li>
+      <li><h3>You fix what matters, we track it</h3><p>Each item has an owner and a time estimate. The next report says whether it was done, and the traffic lights move when it is.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section id="sample">
+  <div class="wrap">
+    <div class="sec-head"><span class="status info"><span class="dot"></span>Sample report</span><h2>What a real week looks like</h2></div>
+    <div class="two">
+      <div class="prose">
+        <p>On the right is the "compared with last week" box from a real report. This is the level the whole page is written at: numbers you can act on, each with a colour that says whether it is good or bad.</p>
+        <p>The full page runs to about five minutes of reading. Most readers go straight to the verdict, skim the short version, and read the to-do list. The rest is there when they want it.</p>
+        <div class="cta-row"><a class="cta ghost" href="https://claude.ai/artifact/EMJk4dePJeZ51PusKEabb1">Browse the sample archive</a></div>
+      </div>
+      <div class="mock">
+        <h3 style="font-size:1rem;margin-bottom:6px">Compared with last week</h3>
+        <div class="row2"><span style="color:var(--ink2)">Monitor lost contact</span><span class="pill good">121 → 7</span></div>
+        <div class="row2"><span style="color:var(--ink2)">Firefox holes fixed</span><span class="pill good">0 → 20</span></div>
+        <div class="row2"><span style="color:var(--ink2)">Unsupported PCs on network</span><span class="pill good">1 → 0</span></div>
+        <div class="row2"><span style="color:var(--ink2)">Failed logins</span><span class="pill watch">5 → 9</span></div>
+        <div class="row2"><span style="color:var(--ink2)">User account changes</span><span class="pill watch">10 → 15</span></div>
+        <div class="row2"><span style="color:var(--ink2)">PCs scoring under 30%</span><span class="pill urgent">2 → 3</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head"><span class="status info"><span class="dot"></span>Questions</span><h2>Things people ask</h2></div>
+    <div>
+      <details><summary>Do we need our own IT person?</summary><div class="prose"><p>No. The report is written so that whoever is responsible for the organisation can read it and decide. The to-do items are specific enough to hand to whoever does your IT, whether that is a staff member, a contractor or you.</p></div></details>
+      <details><summary>Does this stop attacks, or just report on them?</summary><div class="prose"><p>It reports. The value is finding out about weaknesses while they are still weaknesses and fixing them, instead of finding out after someone used one. Most break-ins at small organisations come through exactly the items these reports flag: unpatched software, weak settings and reused passwords.</p></div></details>
+      <details><summary>What computers does it work with?</summary><div class="prose"><p>Windows and Mac desktops and laptops, and Linux servers if you have them. Phones, tablets and cloud services such as email are outside what the monitoring sees, and the report says so plainly rather than implying it covers everything.</p></div></details>
+      <details><summary>Will staff notice anything?</summary><div class="prose"><p>No. The monitoring agent runs quietly in the background. It records security-relevant events; it does not read documents, emails or browsing.</p></div></details>
+      <details><summary>Who sees the report?</summary><div class="prose"><p>Only the people you nominate. It names your computers and your public internet address, so it is kept private, not published.</p></div></details>
+      <details><summary>Can we get a monthly or board version?</summary><div class="prose"><p>Yes. A monthly summary in the same style, or a PDF for a board pack, can be produced from the same monitoring.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <h2>Find out how safe your computers are this week</h2>
+        <p>Tell us how many computers you have and what they run. We set up the monitoring, and your first report arrives the following week.</p>
+      </div>
+      <a class="cta" href="mailto:hello@example.com?subject=Safe%20Business">Get in touch</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#sb-logo"/></svg>Safe Business</a>
+    <p style="margin-top:10px">Plain-English weekly security reports for small organisations. Monitoring built on open-source tools; the words written for people, not systems.</p>
+  </div>
+</footer>
+</body></html>
