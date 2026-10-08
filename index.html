@@ -1,5 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Safe Business</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Safe Business</title>
+<link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -135,8 +135,20 @@ footer .brand{font-size:1rem;color:var(--ink2)}
 .band p{color:rgba(255,255,255,.85);max-width:56ch;margin-top:8px}
 .band .cta{background:#fff;color:var(--accent-ink)}
 @media (max-width:720px){.band{grid-template-columns:1fr}}
-</style>
-</head><body>
+.form{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+.form .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.form .grid{grid-template-columns:1fr}}
+.form label{display:block;font-family:var(--display);font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.form input,.form select,.form textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:1rem}
+.form input:focus,.form select:focus,.form textarea:focus{outline:3px solid color-mix(in srgb,var(--accent) 35%,transparent);border-color:var(--accent)}
+.form textarea{min-height:120px;resize:vertical}
+.form .full{grid-column:1 / -1}
+.form .note{font-size:.85rem;color:var(--ink3);margin-top:12px}
+.form .ok{display:none;margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--good-soft);color:var(--ink);font-weight:700}
+.form.sent .ok{display:block}
+.form.sent .grid,.form.sent .cta,.form.sent .note{display:none}
+.hp{position:absolute;left:-9999px;opacity:0}
+</style></head><body>
 
 <nav>
   <div class="wrap">
@@ -326,16 +338,61 @@ footer .brand{font-size:1rem;color:var(--ink2)}
 
 <section id="contact">
   <div class="wrap">
-    <div class="band">
+    <div class="band" style="margin-bottom:24px">
       <div>
         <h2>Find out how safe your computers are this week</h2>
-        <p>Tell us how many computers you have and what they run. We set up the monitoring, and your first report arrives the following week.</p>
+        <p>Tell us a little about your organisation. We set up the monitoring, and your first report arrives the following week.</p>
       </div>
-      <a class="cta" href="mailto:hello@example.com?subject=Safe%20Business">Get in touch</a>
     </div>
+    <form class="form" id="contactForm" novalidate>
+      <div class="grid">
+        <div><label for="f-name">Your name</label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
+        <div><label for="f-org">Organisation</label><input id="f-org" name="organisation" type="text" autocomplete="organization" required></div>
+        <div><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+        <div><label for="f-phone">Phone (optional)</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+        <div><label for="f-count">How many computers?</label>
+          <select id="f-count" name="computers" required>
+            <option value="">Choose</option><option>1 to 5</option><option>6 to 15</option><option>16 to 30</option><option>31 to 50</option><option>More than 50</option>
+          </select></div>
+        <div><label for="f-type">What do they run?</label>
+          <select id="f-type" name="systems" required>
+            <option value="">Choose</option><option>Mostly Windows</option><option>Mostly Mac</option><option>A mix of Windows and Mac</option><option>Not sure</option>
+          </select></div>
+        <div class="full"><label for="f-msg">Anything else we should know?</label><textarea id="f-msg" name="message" placeholder="For example: we have a server, we handle client records, we just had a scare..."></textarea></div>
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+      </div>
+      <div class="cta-row" style="margin-top:20px"><button class="cta" type="submit">Send enquiry</button></div>
+      <p class="note">We reply within two working days. Your details are used only to get back to you.</p>
+      <div class="ok" role="status">Thanks, your enquiry is on its way. We will be in touch within two working days.</div>
+    </form>
   </div>
 </section>
 
+<script>
+(function(){
+  // Set ENDPOINT to a form service URL (e.g. Formspree: https://formspree.io/f/yourid) to send silently.
+  // Leave blank and the form opens the visitor's email app with everything filled in.
+  var ENDPOINT = '';
+  var TO = 'hello@example.com';
+  var f=document.getElementById('contactForm');
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    if(!f.checkValidity()){ f.reportValidity(); return; }
+    if(f.website.value) return; // honeypot
+    var d=new FormData(f), lines=[];
+    d.forEach(function(v,k){ if(k!=='website' && v) lines.push(k.charAt(0).toUpperCase()+k.slice(1)+': '+v); });
+    if(ENDPOINT){
+      fetch(ENDPOINT,{method:'POST',headers:{'Accept':'application/json'},body:d})
+        .then(function(r){ if(r.ok){ f.classList.add('sent'); } else { throw new Error(); } })
+        .catch(function(){ alert('Sorry, that did not send. Please email '+TO+' instead.'); });
+    } else {
+      var body=encodeURIComponent(lines.join('\n'));
+      window.location.href='mailto:'+TO+'?subject='+encodeURIComponent('Safe Business enquiry from '+d.get('organisation'))+'&body='+body;
+      f.classList.add('sent');
+    }
+  });
+})();
+</script>
 <footer>
   <div class="wrap">
     <a class="brand" href="#top"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#sb-logo"/></svg>Safe Business</a>
