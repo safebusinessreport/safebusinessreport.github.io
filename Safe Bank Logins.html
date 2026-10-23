@@ -1,0 +1,185 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Safe Bank Logins</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one wide column, a big search bar pinned at the top, an A-Z strip, then one bank per row (never a dense grid) so nothing is small or crowded. */
+:root{
+  --bg:#f6f4ee; --card:#ffffff; --fg:#1c1b18; --muted:#5a574f; --line:#d9d5c9;
+  --accent:#0b5c3f; --accent-fg:#ffffff; --accent-soft:#e2efe8; --focus:#d97b00;
+  --font:"Atkinson Hyperlegible",Verdana,Arial,sans-serif; --mono:"Courier New",monospace;
+  --base:22px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15171a; --card:#1f2226; --fg:#f2f0ea; --muted:#b5b1a6; --line:#3a3e44;
+  --accent:#58c295; --accent-fg:#0d1a14; --accent-soft:#1d3329; --focus:#ffb14d; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#15171a; --card:#1f2226; --fg:#f2f0ea; --muted:#b5b1a6; --line:#3a3e44;
+  --accent:#58c295; --accent-fg:#0d1a14; --accent-soft:#1d3329; --focus:#ffb14d; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:var(--base);line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 60px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:2em;margin:0;line-height:1.1;text-wrap:balance}
+header{padding-block:28px 10px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.tag{color:var(--muted);font-size:.85em;margin-top:6px}
+.tools{display:flex;gap:10px;flex-wrap:wrap}
+button,.go{font:inherit;cursor:pointer;border-radius:14px;min-height:60px;padding:0 22px;font-weight:700}
+.btn{background:var(--card);color:var(--fg);border:3px solid var(--line)}
+.btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:5px solid var(--focus);outline-offset:3px}
+
+.search{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:12px 14px;z-index:5}
+.search label{display:block;font-weight:700;margin-bottom:8px}
+.search-row{display:flex;gap:10px}
+input[type=search]{flex:1;min-width:0;font:inherit;font-size:1.2em;padding:14px 20px;border:3px solid var(--line);border-radius:16px;background:var(--card);color:var(--fg)}
+input[type=search]:focus{border-color:var(--accent)}
+.clear{display:none}
+.clear.show{display:inline-block}
+
+.letters{display:flex;flex-wrap:wrap;gap:8px;padding-block:6px 18px}
+.letters button{min-height:52px;min-width:52px;padding:0 12px;border-radius:12px;background:var(--card);border:3px solid var(--line);color:var(--fg)}
+.letters button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.letters button:disabled{opacity:.35;cursor:default}
+
+.count{color:var(--muted);font-size:.85em;margin-bottom:12px}
+.list{display:grid;gap:14px}
+.bank{display:grid;grid-template-columns:84px 1fr auto;gap:18px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:18px 20px}
+.bank.open{border-color:var(--accent)}
+.icon{width:84px;height:84px;border-radius:20px;display:grid;place-items:center;font-weight:700;font-size:1.3em;letter-spacing:.02em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.name{font-size:1.25em;font-weight:700;line-height:1.2;min-width:0}
+.also{color:var(--muted);font-size:.8em;margin-top:4px}
+.go{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--accent-fg);text-decoration:none;border:3px solid var(--accent);white-space:nowrap}
+.go svg{width:26px;height:26px}
+.details{grid-column:1/-1;display:none;border-top:2px solid var(--line);padding-top:14px;font-size:.85em;color:var(--muted)}
+.bank.open .details{display:grid;gap:10px}
+.url,.hash{font-family:var(--mono);word-break:break-all;color:var(--fg);font-size:.95em}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.small{min-height:46px;padding:0 16px;font-size:.8em}
+.more{grid-column:1/-1;justify-self:start;background:none;border:none;color:var(--accent);text-decoration:underline;min-height:44px;padding:0;font-size:.85em}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:1.1em}
+.tip{margin-top:36px;background:var(--accent-soft);border-radius:20px;padding:22px 24px;font-size:.95em}
+.tip strong{display:block;font-size:1.1em;margin-bottom:6px}
+footer{margin-top:28px;color:var(--muted);font-size:.75em}
+
+#fs{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;padding:24px;text-align:center}
+#fs .box{max-width:560px;display:grid;gap:18px;justify-items:center}
+#fs h2{font-size:1.8em;margin:0;line-height:1.15;text-wrap:balance}
+#fs p{margin:0;color:var(--muted)}
+#fs .go{font-size:1.2em;min-height:76px;padding:0 36px}
+#fs .skip{background:none;border:none;color:var(--muted);text-decoration:underline;min-height:44px}
+
+@media (max-width:600px){
+  :root{--base:19px}
+  .bank{grid-template-columns:64px 1fr}
+  .icon{width:64px;height:64px;font-size:1.05em;border-radius:16px}
+  .go{grid-column:1/-1;justify-content:center}
+  header{padding-top:18px}
+}
+@media (prefers-reduced-motion:no-preference){ .bank{transition:border-color .15s} }
+</style>
+
+<div id="fs">
+  <div class="box">
+    <h2>Safe Bank Logins</h2>
+    <p>Verified internet banking addresses for Australian banks. Open full screen so there is nothing else on your screen to confuse you.</p>
+    <button class="go" id="fsBtn" type="button">Open full screen</button>
+    <button class="skip" id="fsSkip" type="button">Continue without full screen</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Safe Bank Logins</h1>
+      <div class="tag">70 Australian banks, checked 23 October 2026</div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="smaller" type="button" aria-label="Smaller text">A&minus;</button>
+      <button class="btn" id="bigger" type="button" aria-label="Bigger text">A+</button>
+      <button class="btn" id="fsToggle" type="button">Full screen</button>
+    </div>
+  </header>
+
+  <div class="search">
+    <label for="q">Type your bank's name</label>
+    <div class="search-row">
+      <input type="search" id="q" placeholder="For example: Commonwealth, NAB, Bendigo" autocomplete="off" inputmode="search">
+      <button class="btn clear" id="clear" type="button">Clear</button>
+    </div>
+  </div>
+
+  <div class="letters" id="letters" aria-label="Filter by first letter"></div>
+  <div class="count" id="count"></div>
+  <div class="list" id="list"></div>
+
+  <div class="tip">
+    <strong>How to stay safe</strong>
+    Only use the green buttons on this page to reach your bank. Never follow a link from a text message or an email, even if it looks like it came from your bank. Your bank will never ask for your password over the phone.
+  </div>
+  <footer>Addresses come from the APRA register of authorised deposit-taking institutions and were checked by following each bank's own "Log in" button. Each address is shown with its SHA-256 fingerprint so a technical helper can confirm it has not been altered.</footer>
+</div>
+
+<script>
+const BANKS = [{"n": "Alex Bank", "legal": "Alex Bank Pty Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://online.alex.bank/home", "h": "d7f940496cb73c619314f8b05e730b9705779c87d4891dc2a4c8582365f6b9a4"}, {"n": "AMP Bank", "legal": "AMP Bank Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://secure.amp.com.au/public/login/#/", "h": "deac554467c561c19cc7de287c60c8e1c45cea3ba4dd93950d6a85fa0a049b5b"}, {"n": "ANZ", "legal": "Australia and New Zealand Banking Group Limited", "also": ["ANZ Plus"], "cat": "Australian-owned ADI", "url": "https://login.anz.com/internetbanking", "h": "c7ea93984cc3fdff4367d8f6d09a1514092d8dbde4079bfe93c5db423533e697"}, {"n": "Arab Bank Australia", "legal": "Arab Bank Australia Limited", "also": [], "cat": "Foreign subsidiary bank", "url": "https://online.arabbank.com.au/abaonline/BankFast-Username-Logon", "h": "245c25af036284bcbf5d3b544680d5ecba8e738f25a2758fb6f2200262d6223b"}, {"n": "Australian Military Bank", "legal": "Australian Military Bank Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://ib.australianmilitarybank.com.au/AMBInternetBanking", "h": "bbfb79fa101edd251625d48cca4a1d220bb0f3b50c690059f560f0b1e2dd76ba"}, {"n": "Auswide Bank", "legal": "Auswide Bank Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://ib.auswidebank.com.au/mvpauswb/default.aspx", "h": "25a221ae5f43647bb40824ec5307676e244cf92229787ab2b4f8f22e0787e5e9"}, {"n": "Bank Australia", "legal": "Bank Australia Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.bankaust.com.au/", "h": "db459b9807e7afcab6ed38e1dfe3171552ac0b6d4ce285e7eaff14ff7786d7c1"}, {"n": "Bank First", "legal": "Victoria Teachers Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ibank.bankfirst.com.au/desktop/signon/login.aspx", "h": "3ed32798fb2b216d3a06b67c1165b107485fff07cd1cc83969cebbe24a06ee1f"}, {"n": "Bank of Sydney", "legal": "Bank of Sydney Ltd", "also": [], "cat": "Foreign subsidiary bank", "url": "https://ib.banksyd.com.au/", "h": "d68747e44c341a9f2aad00f40f2de30d7ec2236ab44e51ab1cea62545d1352dc"}, {"n": "Bank of us", "legal": "B&E Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://secureapps.bankofus.com.au/ibank3", "h": "5be843d1ebd559920aea31848939be71781914a57103fef35aac9357fc782884"}, {"n": "Bank Orange", "legal": "Orange Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://online.bankorange.com.au/mvp3orange/default.aspx", "h": "a80595ab2d056b982dbd7618bfb11ad017aa6999c336fcf93a51b4de8f7edb22"}, {"n": "BankVic", "legal": "Police Financial Services Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ib.bankvic.com.au/bvib/signon/login.aspx", "h": "f2683efb30d37c68fdf52bff495d2048fe1d94f6bfa512527cc316c0417e4393"}, {"n": "BankWAW", "legal": "WAW Credit Union Co-Operative Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://onlinebanking.wawcu.com.au/bankwawmvp3/signon/login.aspx", "h": "57cb87fdb1a38fcbfeb8566fa6de835958e1357a0c6792ed57f55b368d67c42f"}, {"n": "Bendigo Bank", "legal": "Bendigo and Adelaide Bank Limited", "also": ["Adelaide Bank", "Up"], "cat": "Australian-owned ADI", "url": "https://banking.bendigobank.com.au/banking", "h": "aeef68f8f3a2b79f02ca90f359162a2051621333cddba4085d0d42a64254e869"}, {"n": "Beyond Bank", "legal": "Beyond Bank Australia Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://online.beyondbank.com.au/", "h": "72a9761acb3ab3c56d8392df94e866b5da62389fa6a65c1215b1670337d12476"}, {"n": "BNK Bank", "legal": "BNK Banking Corporation Limited", "also": ["Goldfields Money"], "cat": "Australian-owned ADI", "url": "https://ibank.goldfieldsmoney.com.au/banking/personal/", "h": "bd9345abb224b35fd4d1e695354d65183273e3064b93e16dec8c436a6cc7fa0d"}, {"n": "BOQ", "legal": "Bank of Queensland Limited", "also": ["ME Bank", "Virgin Money Australia"], "cat": "Australian-owned ADI", "url": "https://internetbanking.boq.com.au/login", "h": "e1134179bb2dc9837c620a46f048ca40f7e1b46b28715a94fe03c61067fe9d2c"}, {"n": "Broken Hill Bank", "legal": "The Broken Hill Community Credit Union Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.brokenhill.bank/", "h": "a9b756899d5fc625eddfa165c450dca21cdb02ebc81d8c98cd77a432995a82b5"}, {"n": "Cairns Bank", "legal": "Cairns Penny Savings & Loans Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ibanking.cairnsbank.com.au/cairnsbankmvp3/signon/login.aspx", "h": "a65d6a0e9e9908835764df4ee426c4ef1de273563906bcfcf4269e0e7a6f05a4"}, {"n": "Central Murray Bank", "legal": "Central Murray Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://secure.centralmurray.bank/mvp3centralmurray/default.aspx", "h": "dd9972e2d7155726c39d4b332e395aeb405cd27fc660cf3c58ef9cacff8aa960"}, {"n": "Central West Credit Union", "legal": "Central West Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ib.cwcu.com.au/mvp3cwcul/SignOn/Login.aspx", "h": "98908b6251521beabb06fbf5c9c8f05c351aa8575e34aa34a265ed798b8fbedc"}, {"n": "Coastline Bank", "legal": "Coastline Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.coastline.com.au/", "h": "6eb0394a6f077cb5069e18ca36b8ac36dfb07bdf5b446d8cadbc1e440adb29f5"}, {"n": "CommBank", "legal": "Commonwealth Bank of Australia", "also": ["Bankwest"], "cat": "Australian-owned ADI", "url": "https://www.my.commbank.com.au/netbank/Logon/Logon.aspx", "h": "d3da20dd52a4c9b791ef992d85af7a17739db092354d4fb858a94e2873f7786b"}, {"n": "Community First Bank", "legal": "Community First Credit Union Limited", "also": ["Easy Street", "Illawarra Credit Union"], "cat": "Australian-owned ADI", "url": "https://netbank.communityfirst.com.au/cf-ibanking3/Signon/Login.aspx", "h": "151459441b474133ad9e50323f624f1c1e26a132f56081e7917c806ac5dfeee3"}, {"n": "Credit Union SA", "legal": "Credit Union SA Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.creditunionsa.com.au/", "h": "2b9aa5d0a1d7ef2d84a27ba75759b670d70f388127d8c12178815cec5c72cd19"}, {"n": "Defence Bank", "legal": "Defence Bank Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.defencebank.com.au/", "h": "8bdb02fc038a92b2bf07e1509510b9249b3ad39839ed8eac646c4f4878c9dd48"}, {"n": "Dnister", "legal": "Dnister Ukrainian Credit Co-operative Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://banking.dnister.com.au/", "h": "6975c7750166dfeb04159520150cab05ff53bb621cd805c16d80a225df4a9c75"}, {"n": "Fire Service Credit Union", "legal": "Fire Service Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.fscu.com.au/", "h": "f21059ace9da2a7d4e40d37fff6fdf13f356419c6dbe55cbdf752b710c48f01e"}, {"n": "First Option Bank", "legal": "First Option Bank Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://internetbanking.firstoption.com.au/mvpfirstoption/signon/login.aspx", "h": "6f12879113145baed2eddc86b7773c6a28a725c1e1aaf717db407a7f9cbf3a33"}, {"n": "Gateway Bank", "legal": "Gateway Bank Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.gatewaybank.com.au/", "h": "8a359fca5c5616870b08ca81cec0f473cae742f2e943a7bcfa829b17c533b83d"}, {"n": "GMCU", "legal": "Goulburn Murray Credit Union Co-operative Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://secure.gmcu.com.au/MVPMobileGoulburnMurray/SignOn/Login.aspx", "h": "93b67c47baa5116eb6b1d40cbd03e85015a72af41c6240da8412cf657fa56eef"}, {"n": "Great Southern Bank", "legal": "Credit Union Australia Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://ob.greatsouthernbank.com.au/", "h": "e27f34974d02fd6597dd0c9e592c3bd026df513c9e6f07701546a68cd6171e96"}, {"n": "Heritage Bank", "legal": "Heritage and People's Choice Limited", "also": ["People's Choice", "People First Bank"], "cat": "Australian-owned ADI", "url": "https://app.digital.peoplefirstbank.com.au/web", "h": "9922bb8f15a717d73e6215cc4c83c9d804966070e90bcdee65ae708232e884bb"}, {"n": "Horizon Bank", "legal": "Horizon Credit Union Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://onlinebanking.horizonbank.com.au/mvp3horizon/default.aspx", "h": "70653233179d6cde7fac4c44d7f26f15c1416a0536cf42a5d923b000c0cc751c"}, {"n": "HSBC Australia", "legal": "HSBC Bank Australia Limited", "also": [], "cat": "Foreign subsidiary bank", "url": "https://www.services.online-banking.hsbc.com.au/gpib", "h": "7ee2d41352cbe51224e4b888446cb4156e61d9c6a4eefa5ccb75def1feb9cf73"}, {"n": "Hume Bank", "legal": "Hume Bank Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ibank.humebank.com.au/mvp/SignOn/Login.aspx", "h": "55c0ae8d1f4503dd8e6c9ea377c056faa11022be98b18accd5dd89165496fcea"}, {"n": "IMB Bank", "legal": "IMB Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://internetbanking.imb.com.au/Personal/BankFast-Username-Logon", "h": "9d3a4ab9cd667d42e6154cd7a8d1464dd4495cb6f2a93a6cef729b894e70bbfb"}, {"n": "ING", "legal": "ING Bank (Australia) Limited", "also": [], "cat": "Foreign subsidiary bank", "url": "https://www.ing.com.au/securebanking/", "h": "74a43706f6d700dc695e666a3d0a81df4db801ab6bcefa546e6092ffe2cbf405"}, {"n": "Judo Bank", "legal": "Judo Bank Pty Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.judo.bank/", "h": "d43cb91c4d5c4a80a124affa26d5bc4d9939ce272a89102ea1678035e32cec04"}, {"n": "LCU", "legal": "Laboratories Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://internetbanking.lcu.com.au/mvp3lcu/signon/login.aspx", "h": "b707d097a13b78d1f01d53599b306abc6f53b783a55d6e0cc644618dc4ec9796"}, {"n": "Macquarie Bank", "legal": "Macquarie Bank Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://online.macquarie.com.au", "h": "69df76b90754ca38fd50748b806e4a0730411f40c5d6a9ac5268983611f7f5ec"}, {"n": "MOVE Bank", "legal": "Railways Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://digital.move.bank/login", "h": "a6e6ab8aed51540dc6d37db83a770acff0babbbb396bffa5ee31fa540bab0914"}, {"n": "MyState Bank", "legal": "MyState Bank Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://secure.mystate.com.au/web", "h": "417a66d2a08c9c180c6b5ae4b20740e984a02e7f227efe6d56118180aad51791"}, {"n": "NAB", "legal": "National Australia Bank Limited", "also": ["UBank"], "cat": "Australian-owned ADI", "url": "https://ib.nab.com.au/login", "h": "f5e8f66fcd0a1b0501f7d88d1ce0bf9b26b775ded9d4eaf797e9a1479d24c873"}, {"n": "Newcastle Permanent", "legal": "Newcastle Greater Mutual Group Ltd", "also": ["Greater Bank"], "cat": "Australian-owned ADI", "url": "https://www.newcastlepermanent.com.au/np-ib-login-link", "h": "6b3ab5ab32ce1325875bf8f349577d7aa0b01bbdc33d7ee7a42db1a840c96e90"}, {"n": "Northern Inland Credit Union", "legal": "Northern Inland Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://secure.nicu.com.au/mvp3nicu/signon/login.aspx", "h": "543c86712c0e9294514c96a1683123862f22ccc434ac157005d67795fd65c403"}, {"n": "P&N Bank", "legal": "Police & Nurses Limited", "also": ["BCU Bank"], "cat": "Australian-owned ADI", "url": "https://digital.pnbank.com.au/", "h": "04814b5e917673651b8615fc6135d7ebfa612e396ac960f36f2bd1b482240ef6"}, {"n": "Police Bank", "legal": "Police Bank Ltd", "also": ["Border Bank", "Bank of Heritage Isle"], "cat": "Australian-owned ADI", "url": "https://ebanking.policebank.com.au/ibank/SignOn/Login.aspx", "h": "3969ba68b76436af490352e3506c19f4faade466e3f21ec7940c2a568c15b288"}, {"n": "Police Credit Union", "legal": "Police Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://www.pcunet1.com.au/internet-banking/signon/login.aspx", "h": "85dc4bd44f190e2462ba80a6f7f6f25ae3221312fc07ba46b7a8481770f9cecf"}, {"n": "QBANK", "legal": "QPCU Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://services.qbank.com.au/home/default.aspx", "h": "7b11091ae74d66fad90ec3c5b89843af214c6c30a7c48ec569a707f865b48548"}, {"n": "Queensland Country Bank", "legal": "Queensland Country Bank Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ib.queenslandcountry.bank/", "h": "08d378fd0312a28964ea3c97720680db5ece417f8f8f00fa57fc02c0b9b5e3bc"}, {"n": "Rabobank", "legal": "Cooperatieve Rabobank U.A.", "also": [], "cat": "Branch of foreign bank", "url": "https://mysecure.rabobank.com.au/cb", "h": "467c698d05cd845284d4a20108ccb24ef82d7830d7b34ec5b356f7932975d8cb"}, {"n": "Rabobank Australia", "legal": "Rabobank Australia Limited", "also": [], "cat": "Foreign subsidiary bank", "url": "https://mysecure.rabobank.com.au/ros/fr/login", "h": "ebb27b3908fea2ee295b75c99e59cf7200b63ccce9d01bdc07aa5889f8ea609a"}, {"n": "RACQ Bank", "legal": "Members Banking Group Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://banking.racqbank.com.au/#/login", "h": "de3708ea54e3047d802fe79f554df1bb74d0dd3b5f382d84416089b78e0da759"}, {"n": "Regional Australia Bank", "legal": "Regional Australia Bank Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://secure.regionalaustraliabank.com.au/banking/SignOn/Login.aspx", "h": "a3dd9d5e353af8b8d0e235284d83b674e89a0650586803727e8697f5b7b36d63"}, {"n": "Revolut Bank Australia", "legal": "Revolut Payments Australia Pty Ltd", "also": [], "cat": "Foreign subsidiary bank", "url": "https://app.revolut.com/start", "h": "b5169d61764037ab073c139345e591eef06863b6e3abe28b47f3b37b03a4ca51"}, {"n": "Southern Cross Credit Union", "legal": "Southern Cross Credit Union Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://mvp1.sccu.com.au/mvp3sccu/SignOn/login.aspx", "h": "1aad068918c616d9e9c18d3cae28ac6ed6869f3b02d0c3647cc7ee205b272219"}, {"n": "Suncorp Bank", "legal": "Norfina Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://internetbanking.suncorpbank.com.au/usermgmt/public/suncorpbank/login", "h": "e376df05b4ac4709ed700d8f2630f21aecd387935c8ad2c27d438a07e6754dbe"}, {"n": "SWSBANK", "legal": "South West Slopes Credit Union Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://online.swsbank.com.au/mvp3swsbank/default.aspx", "h": "d292ca6e47dd7edfe1f58bf2d323264cde1edf3f14ab8213922eaf0eb09631e7"}, {"n": "TCU", "legal": "Traditional Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ebanking.tcu.com.au/tcumvp3/signon/login.aspx", "h": "6622320e17b8810c5a0063efed016ffac314479a53e777c65d805015b82d69d7"}, {"n": "Teachers Mutual Bank", "legal": "Teachers Mutual Bank Limited", "also": ["UniBank", "Firefighters Mutual Bank", "Health Professionals Bank", "Australian Mutual Bank"], "cat": "Australian-owned ADI", "url": "https://ib.tmbank.com.au/", "h": "96ebc2b2cb5ee5afbf85432dd8b8ba4bd26375f297f3a7e762ad749c2291e996"}, {"n": "The Capricornian Bank", "legal": "The Capricornian Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://onlinebanking.capricornian.com.au/mvp3tcl/Signon/Login.aspx", "h": "b5dec6be677734df3f1c2103cf42e8ca0d11c79fdabd38453d2c6c4adcd955cb"}, {"n": "The Mac", "legal": "Macarthur Credit Union Ltd", "also": [], "cat": "Australian-owned ADI", "url": "https://onlinebanking.themaccu.com.au/mvpmacu3/signon/login.aspx", "h": "07257faf853f99ac6e3acf8ad10478cb71ada1606e181d3e3a51a591db2ad4d2"}, {"n": "The Mutual Bank", "legal": "Maitland Mutual Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://ibank.themutual.com.au/banking3/default.aspx", "h": "d24ca64b76980229e68c9bfa849c0be4c339d3f2c62571abf35fc215b2bdcd0f"}, {"n": "Transport Mutual", "legal": "Transport Mutual Credit Union Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://banking.transportmutual.com.au/mvp3tmc/default.aspx", "h": "b4ddd501b33bf29abce9766c2c9d83804a18351150ab42ff8b99e2fd453dc824"}, {"n": "Tyro", "legal": "Tyro Payments Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://merchant.tyro.com/", "h": "3b36769a9542c61458fbf32a65a1549aece41fb591662bebd4c85003df4b86a0"}, {"n": "Unity Bank", "legal": "Unity Bank Limited", "also": ["G&C Mutual Bank", "Reliance Bank"], "cat": "Australian-owned ADI", "url": "https://ibank.unity.bank/unitybankib/signon/login.aspx", "h": "357b0ab453bc2f09a6e3b2ae9866fd1cd59f169fb06ce51cbe842ebf32539ae7"}, {"n": "Warwick Credit Union", "legal": "Warwick Credit Union Ltd", "also": ["Darling Downs Bank"], "cat": "Australian-owned ADI", "url": "https://ibanking.ddbank.com.au/mvp3ddb/signon/login.aspx", "h": "53c5c9ff19503fa7c62e86459b423eb94e205f8b502c9ddf5b368cc765c2b1fd"}, {"n": "Westpac", "legal": "Westpac Banking Corporation", "also": ["St.George", "Bank of Melbourne", "BankSA"], "cat": "Australian-owned ADI", "url": "https://banking.westpac.com.au/wbc/banking/handler?TAM_OP=login&segment=personal", "h": "56ff4861bafcc6fc6d1ca9f05c679a6c746c9e42b061be34786ba35d3ff5d29c"}, {"n": "Woolworths Team Bank", "legal": "Woolworths Team Bank Limited", "also": [], "cat": "Australian-owned ADI", "url": "https://online.woolworthsteambank.com.au/mvp3wtb/default.aspx", "h": "b422964ae0e2b4c0ec26da523508af58030c2525efd0227737a857ed378c7917"}];
+const list=document.getElementById('list'), q=document.getElementById('q'), letters=document.getElementById('letters'), count=document.getElementById('count'), clear=document.getElementById('clear');
+let letter='';
+const hues={}; BANKS.forEach(b=>{let h=0;for(const c of b.legal)h=(h*31+c.charCodeAt(0))>>>0;hues[b.n]=h%360});
+const initials=n=>{const w=n.replace(/[^A-Za-z0-9 &]/g,'').split(/\s+/).filter(x=>x&&!/^(of|the|and|&|bank)$/i.test(x));if(!w.length)return n.slice(0,2).toUpperCase();if(n.length<=5&&w.length===1)return n.toUpperCase();return w.slice(0,3).map(x=>x[0].toUpperCase()).join('')};
+const arrow='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+function hay(b){return [b.n,b.legal,...b.also].join(' ').toLowerCase()}
+function render(){
+  const term=q.value.trim().toLowerCase();
+  clear.classList.toggle('show',!!term);
+  const shown=BANKS.filter(b=>(!term||hay(b).includes(term))&&(!letter||b.n[0].toUpperCase()===letter));
+  count.textContent=shown.length===BANKS.length?'Showing all '+BANKS.length+' banks':'Showing '+shown.length+' of '+BANKS.length+' banks';
+  list.innerHTML='';
+  if(!shown.length){list.innerHTML='<div class="empty">No bank matches "'+esc(q.value)+'". Try fewer letters, or the name your bank card shows.</div>';return}
+  shown.forEach(b=>{
+    const el=document.createElement('div');el.className='bank';
+    const hue=hues[b.n];
+    el.innerHTML=`<div class="icon" style="background:hsl(${hue} 45% 38%)" aria-hidden="true">${initials(b.n)}</div>
+      <div class="name">${esc(b.n)}${b.also.length?`<div class="also">Also: ${esc(b.also.join(', '))}</div>`:''}</div>
+      <a class="go" href="${b.url}" target="_blank" rel="noopener">Go to ${esc(b.n)} ${arrow}</a>
+      <button class="more" type="button" aria-expanded="false">Show address and fingerprint</button>
+      <div class="details">
+        <div>Address: <span class="url">${esc(b.url)}</span></div>
+        <div>SHA-256: <span class="hash">${b.h}</span></div>
+        <div class="row"><button class="btn small" type="button" data-copy="${esc(b.url)}">Copy address</button><button class="btn small" type="button" data-copy="${b.h}">Copy fingerprint</button></div>
+      </div>`;
+    const more=el.querySelector('.more');
+    more.onclick=()=>{const o=el.classList.toggle('open');more.setAttribute('aria-expanded',o);more.textContent=o?'Hide address and fingerprint':'Show address and fingerprint'};
+    el.querySelectorAll('[data-copy]').forEach(btn=>btn.onclick=()=>copy(btn,btn.dataset.copy));
+    list.appendChild(el);
+  });
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function copy(btn,text){const old=btn.textContent;const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent=old,1500)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fallback())}else fallback();
+  function fallback(){const r=document.createRange();r.selectNodeContents(btn.closest('.details').querySelector(text.length===64?'.hash':'.url'));const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Selected, press Ctrl+C';setTimeout(()=>btn.textContent=old,2500)}}
+// letters
+const present=new Set(BANKS.map(b=>b.n[0].toUpperCase()));
+const all=document.createElement('button');all.type='button';all.textContent='All';all.setAttribute('aria-pressed','true');all.onclick=()=>setLetter('');letters.appendChild(all);
+for(let i=65;i<91;i++){const L=String.fromCharCode(i);const b=document.createElement('button');b.type='button';b.textContent=L;b.disabled=!present.has(L);b.setAttribute('aria-pressed','false');b.onclick=()=>setLetter(L);letters.appendChild(b)}
+function setLetter(L){letter=(letter===L)?'':L;[...letters.children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===0?!letter:b.textContent===letter)));render()}
+q.addEventListener('input',render);clear.onclick=()=>{q.value='';render();q.focus()};
+// text size
+let size=22;try{size=parseInt(localStorage.getItem('sbl-size'))||22}catch(e){}
+function applySize(){document.documentElement.style.setProperty('--base',size+'px');try{localStorage.setItem('sbl-size',size)}catch(e){}}
+document.getElementById('bigger').onclick=()=>{size=Math.min(34,size+3);applySize()};
+document.getElementById('smaller').onclick=()=>{size=Math.max(16,size-3);applySize()};
+applySize();
+// full screen
+const fs=document.getElementById('fs');
+function goFull(){const el=document.documentElement;const p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.reject();return Promise.resolve(p).catch(()=>{})}
+function dismiss(){fs.hidden=true;q.focus({preventScroll:true})}
+document.getElementById('fsBtn').onclick=()=>{goFull().then(dismiss)};
+document.getElementById('fsSkip').onclick=dismiss;
+document.getElementById('fsToggle').onclick=()=>{if(document.fullscreenElement){document.exitFullscreen()}else goFull()};
+document.addEventListener('fullscreenchange',()=>{document.getElementById('fsToggle').textContent=document.fullscreenElement?'Exit full screen':'Full screen'});
+render();
+</script>
+
+</body></html>
