@@ -48,8 +48,8 @@ input[type=search]:focus{border-color:var(--accent)}
 .list{display:grid;gap:14px}
 .bank{display:grid;grid-template-columns:84px 1fr auto;gap:18px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:18px 20px}
 .bank.open{border-color:var(--accent)}
-.icon{width:84px;height:84px;border-radius:20px;display:grid;place-items:center;font-weight:700;font-size:1.3em;letter-spacing:.02em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
-.name{font-size:1.25em;font-weight:700;line-height:1.2;min-width:0}
+.icon{overflow:hidden;position:relative;width:84px;height:84px;border-radius:20px;display:grid;place-items:center;font-weight:700;font-size:1.3em;letter-spacing:.02em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.icon img{width:72%;height:72%;object-fit:contain;border-radius:10px;background:white;padding:5px;display:block}.icon .fallback{display:none}.icon.no-logo img{display:none}.icon.no-logo .fallback{display:block}.hash-tool{color:var(--accent);font-weight:700;text-underline-offset:3px}.name{font-size:1.25em;font-weight:700;line-height:1.2;min-width:0}
 .also{color:var(--muted);font-size:.8em;margin-top:4px}
 .go{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--accent-fg);text-decoration:none;border:3px solid var(--accent);white-space:nowrap}
 .go svg{width:26px;height:26px}
@@ -81,15 +81,6 @@ footer{margin-top:28px;color:var(--muted);font-size:.75em}
 @media (prefers-reduced-motion:no-preference){ .bank{transition:border-color .15s} }
 </style>
 
-<div id="fs">
-  <div class="box">
-    <h2>Safe Bank Logins</h2>
-    <p>Verified internet banking addresses for Australian banks. Open full screen so there is nothing else on your screen to confuse you.</p>
-    <button class="go" id="fsBtn" type="button">Open full screen</button>
-    <button class="skip" id="fsSkip" type="button">Continue without full screen</button>
-  </div>
-</div>
-
 <div class="wrap">
   <header>
     <div>
@@ -119,7 +110,7 @@ footer{margin-top:28px;color:var(--muted);font-size:.75em}
     <strong>How to stay safe</strong>
     Only use the green buttons on this page to reach your bank. Never follow a link from a text message or an email, even if it looks like it came from your bank. Your bank will never ask for your password over the phone.
   </div>
-  <footer>Addresses come from the APRA register of authorised deposit-taking institutions and were checked by following each bank's own "Log in" button. Each address is shown with its SHA-256 fingerprint so a technical helper can confirm it has not been altered.</footer>
+  <footer>Addresses come from the APRA register of authorised deposit-taking institutions and were checked by following each bank's own "Log in" button. Each address includes a SHA-256 hash of the URL text for comparison. A matching hash does not prove a website is genuine or safe.</footer>
 </div>
 
 <script>
@@ -128,6 +119,25 @@ const list=document.getElementById('list'), q=document.getElementById('q'), lett
 let letter='';
 const hues={}; BANKS.forEach(b=>{let h=0;for(const c of b.legal)h=(h*31+c.charCodeAt(0))>>>0;hues[b.n]=h%360});
 const initials=n=>{const w=n.replace(/[^A-Za-z0-9 &]/g,'').split(/\s+/).filter(x=>x&&!/^(of|the|and|&|bank)$/i.test(x));if(!w.length)return n.slice(0,2).toUpperCase();if(n.length<=5&&w.length===1)return n.toUpperCase();return w.slice(0,3).map(x=>x[0].toUpperCase()).join('')};
+// Prefer each institution's public brand domain rather than its login subdomain.
+const brandDomains={
+ 'ANZ':'anz.com.au','BOQ':'boq.com.au','CommBank':'commbank.com.au',
+ 'NAB':'nab.com.au','Westpac':'westpac.com.au','AMP Bank':'amp.com.au',
+ 'Bank of Sydney':'banksyd.com.au','BankWAW':'wawcu.com.au',
+ 'BNK Bank':'bnk.com.au','Heritage Bank':'peoplefirstbank.com.au',
+ 'Revolut Bank Australia':'revolut.com','RACQ Bank':'racq.com.au',
+ 'Warwick Credit Union':'warwickcu.com.au','Tyro':'tyro.com',
+ 'Teachers Mutual Bank':'tmbank.com.au','Community First Bank':'communityfirst.com.au',
+ 'Newcastle Permanent':'newcastlepermanent.com.au','Rabobank':'rabobank.com.au',
+ 'Rabobank Australia':'rabobank.com.au','ING':'ing.com.au',
+ 'HSBC Australia':'hsbc.com.au','Macquarie Bank':'macquarie.com.au'
+};
+const logoDomain=b=>brandDomains[b.n]||(()=>{try{let h=new URL(b.url).hostname.replace(/^www\./,'');const parts=h.split('.');return parts.length>2?parts.slice(-3).join('.'):h}catch(e){return ''}})();
+const logoSources=b=>{const d=logoDomain(b);return [
+ 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(d)+'&sz=128',
+ 'https://icons.duckduckgo.com/ip3/'+encodeURIComponent(d)+'.ico',
+ 'https://'+d+'/favicon.ico'
+]};
 const arrow='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
 function hay(b){return [b.n,b.legal,...b.also].join(' ').toLowerCase()}
 function render(){
@@ -140,17 +150,19 @@ function render(){
   shown.forEach(b=>{
     const el=document.createElement('div');el.className='bank';
     const hue=hues[b.n];
-    el.innerHTML=`<div class="icon" style="background:hsl(${hue} 45% 38%)" aria-hidden="true">${initials(b.n)}</div>
+    el.innerHTML=`<div class="icon" style="background:hsl(${hue} 45% 38%)" aria-hidden="true"><img src="${logoSources(b)[0]}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="fallback">${initials(b.n)}</span></div>
       <div class="name">${esc(b.n)}${b.also.length?`<div class="also">Also: ${esc(b.also.join(', '))}</div>`:''}</div>
       <a class="go" href="${b.url}" target="_blank" rel="noopener">Go to ${esc(b.n)} ${arrow}</a>
-      <button class="more" type="button" aria-expanded="false">Show address and fingerprint</button>
+      <button class="more" type="button" aria-expanded="false">Show address and SHA-256</button>
       <div class="details">
         <div>Address: <span class="url">${esc(b.url)}</span></div>
-        <div>SHA-256: <span class="hash">${b.h}</span></div>
-        <div class="row"><button class="btn small" type="button" data-copy="${esc(b.url)}">Copy address</button><button class="btn small" type="button" data-copy="${b.h}">Copy fingerprint</button></div>
+        <div>SHA-256 of login URL text: <span class="hash">${b.h}</span></div>
+         <div><a class="hash-tool" href="https://base64.sh/sha256-hash/" target="_blank" rel="noopener noreferrer">Open SHA-256 hash tool ↗</a> <span>(paste the copied URL to calculate and compare)</span></div>
+        <div class="row"><button class="btn small" type="button" data-copy="${esc(b.url)}">Copy address</button><button class="btn small" type="button" data-copy="${b.h}">Copy SHA-256 hash</button></div>
       </div>`;
-    const more=el.querySelector('.more');
-    more.onclick=()=>{const o=el.classList.toggle('open');more.setAttribute('aria-expanded',o);more.textContent=o?'Hide address and fingerprint':'Show address and fingerprint'};
+    const logo=el.querySelector('.icon img');const sources=logoSources(b);let attempt=0;logo.addEventListener('error',()=>{attempt++;if(attempt<sources.length)logo.src=sources[attempt];else logo.parentElement.classList.add('no-logo')});
+     const more=el.querySelector('.more');
+    more.onclick=()=>{const o=el.classList.toggle('open');more.setAttribute('aria-expanded',o);more.textContent=o?'Hide address and SHA-256':'Show address and SHA-256'};
     el.querySelectorAll('[data-copy]').forEach(btn=>btn.onclick=()=>copy(btn,btn.dataset.copy));
     list.appendChild(el);
   });
@@ -171,12 +183,8 @@ function applySize(){document.documentElement.style.setProperty('--base',size+'p
 document.getElementById('bigger').onclick=()=>{size=Math.min(34,size+3);applySize()};
 document.getElementById('smaller').onclick=()=>{size=Math.max(16,size-3);applySize()};
 applySize();
-// full screen
-const fs=document.getElementById('fs');
+// full screen (optional; no startup overlay)
 function goFull(){const el=document.documentElement;const p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.reject();return Promise.resolve(p).catch(()=>{})}
-function dismiss(){fs.hidden=true;q.focus({preventScroll:true})}
-document.getElementById('fsBtn').onclick=()=>{goFull().then(dismiss)};
-document.getElementById('fsSkip').onclick=dismiss;
 document.getElementById('fsToggle').onclick=()=>{if(document.fullscreenElement){document.exitFullscreen()}else goFull()};
 document.addEventListener('fullscreenchange',()=>{document.getElementById('fsToggle').textContent=document.fullscreenElement?'Exit full screen':'Full screen'});
 render();
